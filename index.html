@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Mobilcard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        body {
+            background-color: #008a00;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Empty white status bar area */
+        .status-bar {
+            height: 44px;
+            background-color: white;
+            width: 100%;
+            flex-shrink: 0;
+        }
+        
+        /* Main green container */
+        .main-container {
+            flex: 1;
+            background-color: #008a00;
+            padding: 0 16px 24px 16px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+        
+        /* Close button */
+        .close-button {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+        }
+        
+        .close-button svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+        
+        /* First card - Ticket info */
+        .ticket-card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-top: 48px;
+            margin-bottom: 16px;
+        }
+        
+        /* Mobilcard header image */
+        .mobilcard-header {
+            margin-bottom: 16px;
+        }
+        
+        .mobilcard-header img {
+            max-width: 350px;
+            height: auto;
+        }
+        
+        .label {
+            font-size: 14px;
+            color: #888888;
+            font-weight: 400;
+            margin-bottom: 2px;
+        }
+        
+        .date-time {
+            font-size: 22px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+        }
+        
+        .ticket-holder-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        .journey-label {
+            font-size: 14px;
+            color: #888888;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        
+        .route-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: #3a3a3c;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .route-badge span {
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .route-text {
+            font-size: 22px;
+            font-weight: 700;
+            color: #000000;
+            line-height: 1.3;
+            letter-spacing: -0.3px;
+        }
+        
+        /* Second card - QR code */
+        .qr-card {
+            background-color: white;
+            border-radius: 16px;
+            padding: 32px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .qr-code {
+            width: 280px;
+            height: 280px;
+            object-fit: contain;
+            margin-bottom: 24px;
+        }
+        
+        .check-validity-btn {
+            background-color: #0095a9;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            padding: 14px 28px;
+            font-size: 17px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            -webkit-appearance: none;
+        }
+        
+        .check-validity-btn:active {
+            background-color: #007a8a;
+        }
+        
+        /* Video container */
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border-radius: 16px;
+        }
+        
+        .video-container.active {
+            display: flex;
+        }
+        
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+        }
+        
+        /* Hide QR content when video is playing */
+        .qr-container.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        /* Safe area padding for iPhone */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .main-container {
+                padding-bottom: calc(24px + env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Empty white status bar -->
+    <div class="status-bar"></div>
+    
+    <!-- Main green container -->
+    <div class="main-container">
+        <!-- Close button -->
+        <div class="close-button">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"/>
+            </svg>
+        </div>
+        
+        <!-- Ticket info card -->
+        <div class="ticket-card">
+            <!-- Mobilcard header image -->
+            <div class="mobilcard-header">
+                <img src="IMG_6271.jpg" alt="Mobilcard 1 day">
+            </div>
+            
+            <div class="label">Validated</div>
+            <div class="date-time">27.11.2025, 07:41</div>
+            
+            <div class="label">Ticket holder</div>
+            <div class="ticket-holder-name">Vadym Yeremiichuk</div>
+            
+            <div class="divider"></div>
+            
+            <div class="journey-label">Journey planner</div>
+            <div class="route-badge">
+                <span>R</span>
+            </div>
+            <div class="route-text">Bahnhof Sterzing - Pfitsch –<br>Bahnhof Meran</div>
+        </div>
+        
+        <!-- QR code card -->
+        <div class="qr-card">
+            <div class="qr-container" id="qrContainer">
+                <img src="imagecode.png" alt="QR Code" class="qr-code">
+                <button class="check-validity-btn" id="checkValidityBtn">Check validity</button>
+            </div>
+            
+            <div class="video-container" id="videoContainer">
+                <video id="animationVideo" playsinline webkit-playsinline muted>
+                    <source src="animation_final.mp4" type="video/mp4">
+                    <source src="animation_final.mov" type="video/quicktime">
+                </video>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const checkValidityBtn = document.getElementById('checkValidityBtn');
+        const qrContainer = document.getElementById('qrContainer');
+        const videoContainer = document.getElementById('videoContainer');
+        const animationVideo = document.getElementById('animationVideo');
+        
+        checkValidityBtn.addEventListener('click', function() {
+            // Hide QR code and button
+            qrContainer.classList.add('hidden');
+            
+            // Show video container
+            videoContainer.classList.add('active');
+            
+            // Play video
+            animationVideo.currentTime = 0;
+            animationVideo.play().catch(function(error) {
+                console.log('Video play error:', error);
+                // If video fails to play, show QR code again after a delay
+                setTimeout(showQRCode, 3000);
+            });
+        });
+        
+        // When video ends, show QR code again
+        animationVideo.addEventListener('ended', function() {
+            showQRCode();
+        });
+        
+        function showQRCode() {
+            // Hide video container
+            videoContainer.classList.remove('active');
+            
+            // Show QR code and button
+            qrContainer.classList.remove('hidden');
+        }
+        
+        // Handle video errors
+        animationVideo.addEventListener('error', function() {
+            console.log('Video error');
+            showQRCode();
+        });
+    </script>
+</body>
+</html>
